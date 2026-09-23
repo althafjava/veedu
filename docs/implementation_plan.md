@@ -190,4 +190,4 @@ Cross-check: every phase against the SRS/architecture sections it draws from, an
 | 6 — CI/review | §9 (Quality row) | §8 (CI row) | "CI must pass before merge" criterion |
 | 7 — Deploy | §8, §9 (Performance, Security, SEO) | §8 (deployment table) | "push to main deploys automatically" criterion |
 
-If a future change to the SRS or the architecture doc lands, this table is the fastest way to find which phase(s) it actually touches.
+If a future change to the SRS or the architecture doc lands, this table is the fastest way to find which phase(s) it actually touches.                         
