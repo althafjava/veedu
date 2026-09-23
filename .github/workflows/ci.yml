@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, api]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Skip cleanly until the app folder exists (Phase 1).
+      - name: Check app exists
+        id: exists
+        working-directory: .
+        run: |
+          if [ -f "${{ matrix.app }}/package.json" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "${{ matrix.app }}/ not created yet — skipping."
+          fi
+
+      - uses: actions/setup-node@v4
+        if: steps.exists.outputs.present == 'true'
+        with:
+          node-version: 20
+
+      - name: Install
+        if: steps.exists.outputs.present == 'true'
+        run: npm ci
+
+      - name: Lint
+        if: steps.exists.outputs.present == 'true'
+        run: npm run lint --if-present
+
+      - name: Test
+        if: steps.exists.outputs.present == 'true'
+        run: npm test --if-present
+
+      - name: Build
+        if: steps.exists.outputs.present == 'true'
+        run: npm run build --if-present
+
+      - name: Prisma validate
+        if: steps.exists.outputs.present == 'true' && matrix.app == 'api'
+        run: npx prisma validate
+        env:
+          DATABASE_URL: postgresql://user:pass@localhost:5432/veedu
